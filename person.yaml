@@ -1,0 +1,55 @@
+- name: Print greeting
+
+  hosts: local
+
+  connection: local
+
+
+
+  # Define a variable at the play level
+
+  vars:
+
+    person_name: "Play-Level Satya"
+
+
+
+  # Load variables from an external YAML file
+
+  vars_files:
+
+    - person.yaml
+
+
+
+  # Prompt the user to enter a variable value during execution
+
+
+
+  vars_prompt:
+
+    - name: person_name
+
+      prompt: "Please enter your username"
+
+      private: false
+
+
+
+  tasks:
+
+    # Display the person's name using the variable
+
+    - name: Print name of person
+
+      ansible.builtin.debug:
+
+        msg: "Hello {{ person_name }}"
+
+
+
+      # Define a variable specifically for this task
+
+      vars:
+
+        person_name: "Task-Level Satya"
