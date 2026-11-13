@@ -1,0 +1,61 @@
+# -------------------------------------
+    # Disable the default Redis module
+    # -------------------------------------
+
+    - name: Disable Redis
+      command: dnf module disable redis -y
+
+    # -------------------------------------
+    # Enable Redis version 7 module
+    # -------------------------------------
+
+    - name: Enable Redis
+      command: dnf module enable redis:7 -y
+
+    # -------------------------------------
+    # Install Redis server
+    # -------------------------------------
+
+    - name: Install Redis
+      package:
+        name: redis                  # Package name
+        state: present               # Ensure the package is installed
+
+    # ------------------------------------------
+    # Allow Redis to accept remote connections
+    # ------------------------------------------
+
+    - name: Allow remote connections
+      replace:                       # Module to find and replace matching text
+        path: /etc/redis/redis.conf  # Redis configuration file
+        regexp: '127.0.0.1'          # Text to search for
+        replace: '0.0.0.0'           # Replacement text
+
+    # -------------------------------------
+    # Disable Redis protected mode
+    # -------------------------------------
+
+    - name: Disable protected mode
+      lineinfile:                    # Module to match and replace an entire line
+        path: /etc/redis/redis.conf  # Redis configuration file
+        regexp: '^#?protected-mode yes'  # Pattern to search for
+        line: 'protected-mode no'    # Replace the matching line
+
+    # -------------------------------------
+    # Start and enable Redis service
+    # -------------------------------------
+
+    - name: Start and enable Redis service
+      service:
+        name: redis                  # Redis service name
+        state: started               # Ensure the service is running
+        enabled: yes                 # Start automatically at boot
+
+    # ---------------------------------------------
+    # Restart Redis to apply configuration changes
+    # ---------------------------------------------
+
+    - name: Restart Redis service
+      service:
+        name: redis                  # Redis service name
+        state: restarted             # Restart the service
