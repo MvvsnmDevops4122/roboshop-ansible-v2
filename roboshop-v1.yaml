@@ -1,0 +1,148 @@
+
+# ==========================================================
+# Playbook to Create EC2 Instances and Route 53 Records
+# ==========================================================
+
+- name: Creating EC2 instances and R53 records
+  hosts: local                            # Target local machine (Ansible control node)
+  connection: local                       # Execute AWS operations locally
+
+  # Command to create additional instances:
+  # ansible-playbook roboshop-v1.yaml -e 'instances=["mongodb","redis","rabbitMQ","mysql","catalogue","user","cart"]'
+
+  vars:
+    instances: ["mongodb", "redis", "rabbitMQ", "mysql", "catalogue", "user", "cart", "shipping", "payment", "frontend"]
+                                             # List of EC2 instance names to create or delete
+
+    action: create                           # Action to perform: create or delete
+
+    ami_id: ami-0055977a6e828a4f4            # AWS AMI ID used to launch EC2 instances
+
+    domain_name: mvvsnm.online               # Route 53 hosted zone domain name
+
+  tasks:
+
+    # ======================================================
+    # 1. Create EC2 Instances
+    # ======================================================
+
+    - name: Create EC2 instances
+      amazon.aws.ec2_instance:              # Module to create and manage AWS EC2 instances
+        name: "roboshop-{{ item }}"         # EC2 instance name using the current component name
+        image_id: "{{ ami_id }}"            # AMI ID used to launch the EC2 instance
+        instance_type: t3.micro             # Specify the EC2 instance type
+
+        security_groups:                    # Attach security groups to the EC2 instance
+          - roboshop-common-sg              # Common security group for all RoboShop instances
+          - "roboshop-{{ item }}-sg"        # Component-specific security group
+
+        region: us-east-1                   # AWS region where EC2 instances will be created
+
+      loop: "{{ instances }}"               # Repeat the task for every instance in the list
+      when: action == "create"              # Execute only when the action is create
+      register: ec2_output                  # Store EC2 creation results in the ec2_output variable
+
+
+    # ======================================================
+    # 2. Create Private Route 53 DNS Records
+    # ======================================================
+
+    - name: Create R53 records
+      amazon.aws.route53:                   # Module to create and manage AWS Route 53 DNS records
+        state: present                      # Ensure the DNS record exists; create if it does not exist
+        zone: "{{ domain_name }}"           # Specify the Route 53 hosted zone
+        record: "{{ item.item }}.{{ domain_name }}"
+                                             # DNS record name using the component name
+                                             # Example: mongodb.mvvsnm.online
+        type: A                             # A record maps a domain name to an IPv4 address
+        ttl: 1                              # DNS record cache time in seconds
+        value: "{{ item.instances[0].private_ip_address }}"
+                                             # Use the private IP address of the EC2 instance
+        overwrite: true                     # Allow updating an existing DNS record
+
+      # ec2_output.results contains results from all EC2 creation tasks.
+      # item.item retrieves the current component name from the registered result.
+      # item.instances[0] selects the first EC2 instance from the current result.
+      # private_ip_address retrieves the private IP of that instance.
+
+      loop: "{{ ec2_output.results }}"      # Loop through all EC2 creation results
+      when: action == "create"              # Execute only when the action is create
+
+
+    # ======================================================
+    # 3. Create Frontend Public Route 53 DNS Record
+    # ======================================================
+
+    - name: Create R53 record for frontend
+      amazon.aws.route53:                   # Module to create and manage AWS Route 53 DNS records
+        state: present                      # Ensure the DNS record exists
+        zone: "{{ domain_name }}"           # Specify the Route 53 hosted zone
+        record: "{{ domain_name }}"         # Root domain name (mvvsnm.online)
+        type: A                             # A record maps a domain name to an IPv4 address
+        ttl: 1                              # DNS record cache time in seconds
+        value: "{{ item.instances[0].public_ip_address }}"
+                                             # Use the public IP address of the frontend EC2 instance
+        overwrite: true                     # Allow updating an existing DNS record
+
+      loop: "{{ ec2_output.results }}"      # Loop through all EC2 creation results
+      when: action == "create" and item.item == "frontend"
+                                             # Execute only for the frontend instance when action is create
+
+
+    # ======================================================
+    # 4. Delete Private Route 53 DNS Records
+    # ======================================================
+
+    - name: Delete R53 records
+      amazon.aws.route53:                   # Module to manage and delete AWS Route 53 DNS records
+        state: absent                       # Delete the specified DNS record
+        zone: "{{ domain_name }}"           # Specify the Route 53 hosted zone
+        record: "{{ item }}.{{ domain_name }}"
+                                             # DNS record name to delete
+                                             # Example: mongodb.mvvsnm.online
+        type: A                             # Specify the DNS record type
+
+      loop: "{{ instances }}"               # Repeat for every instance in the list
+      when: action == "delete"              # Execute only when the action is delete
+
+
+    # ======================================================
+    # 5. Delete Frontend Public Route 53 DNS Record
+    # ======================================================
+
+    - name: Delete R53 record for frontend
+      amazon.aws.route53:                   # Module to manage and delete AWS Route 53 DNS records
+        state: absent                       # Delete the specified DNS record
+        zone: "{{ domain_name }}"           # Specify the Route 53 hosted zone
+        record: "{{ domain_name }}"         # Root domain name to delete
+        ttl: 1                              # DNS record cache time in seconds
+        type: A                             # Specify the DNS record type
+
+      when: action == "delete"              # Execute only when the action is delete
+
+
+    # ======================================================
+    # 6. Terminate EC2 Instances
+    # ======================================================
+
+    - name: Terminate specific EC2 instances
+      amazon.aws.ec2_instance:              # Module to manage and terminate AWS EC2 instances
+        state: absent                       # Terminate the specified EC2 instance
+        region: us-east-1                   # AWS region where the instance exists
+        name: "roboshop-{{ item }}"         # Identify EC2 instance using its Name tag
+        wait: false                         # Do not wait for termination to complete
+
+      loop: "{{ instances }}"               # Repeat for every instance in the list
+      when: action == "delete"              # Execute only when the action is delete
+
+
+# ==========================================================
+# Execute the Playbook with action=delete
+# ==========================================================
+
+# ansible-playbook roboshop-v1.yaml -e "action=delete"
+
+# Command-line extra variables (-e) have higher priority than play-level variables.
+# action=delete overrides action=create defined in the playbook.
+# EC2 creation and Route 53 creation tasks are skipped.
+# Route 53 records are deleted and EC2 instances are terminated.

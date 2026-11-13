@@ -1,0 +1,48 @@
+
+
+ # -------------------------------------
+  # Copy MongoDB repository configuration
+  # -------------------------------------
+
+- name: Copy MongoDB repo
+  copy:                                # Ansible module to copy files
+    src: mongo.repo                    # Source file on the Ansible control node
+    dest: /etc/yum.repos.d/mongo.repo  # Destination path on the managed node
+
+# -------------------------------------
+# Install MongoDB server
+# -------------------------------------
+
+- name: Install MongoDB server
+  package:                       # Module to manage software packages
+    name: mongodb-org            # Package name to install
+    state: present               # Ensure the package is installed
+
+# -------------------------------------
+# Start MongoDB service and enable it
+# -------------------------------------
+
+- name: Start and enable MongoDB service
+  service:                       # Module to manage system services
+    name: mongod                 # MongoDB service name
+    state: started               # Ensure the service is running
+    enabled: yes                 # Start the service automatically at boot
+
+# ------------------------------------------
+# Allow MongoDB to accept remote connections
+# ------------------------------------------
+
+- name: Allow remote connections
+  replace:                       # Module to find and replace text in a file
+    path: /etc/mongod.conf       # Configuration file path
+    regexp: '127.0.0.1'          # Text to search for
+    replace: '0.0.0.0'           # Text to replace it with
+
+# ---------------------------------------------
+# Restart MongoDB to apply configuration changes
+# ---------------------------------------------
+
+- name: Restart MongoDB service
+  service:
+    name: mongod                 # MongoDB service name
+    state: restarted             # Restart the service
