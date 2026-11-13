@@ -3,3 +3,7 @@
   become: yes
   roles: # By default it checks in roles folder in current directory
   - "{{ component }}"
+
+
+# Inventory group name must match the component variable.
+# Role directory name must also match the component variable.
