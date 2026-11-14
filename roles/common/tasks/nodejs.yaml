@@ -1,0 +1,20 @@
+# --------------------------------------------------------
+# Configure Node.js 24
+# --------------------------------------------------------
+- name: Disable catalogue
+  command: dnf module disable nodejs -y  # Disable the default Node.js version
+
+- name: Enable catalogue
+  command: dnf module enable nodejs:24 -y  # Enable Node.js version 24
+
+- name: Install catalogue
+  package:
+    name: nodejs  # Package to install
+    state: present  # Ensure the package is installed
+
+# --------------------------------------------------------
+# Install Node.js application dependencies
+# --------------------------------------------------------
+- name: Install npm dependencies
+  community.general.npm:  # Module to manage npm packages
+    path: /app  # Directory containing package.json
