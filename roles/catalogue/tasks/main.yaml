@@ -1,0 +1,78 @@
+   - name: Run another role
+  include_role:
+    name: common
+    tasks_from: app-setup
+
+# --------------------------------------------------------
+# Configure Node.js 24
+# --------------------------------------------------------
+- name: Disable catalogue
+  command: dnf module disable nodejs -y  # Disable the default Node.js version
+
+- name: Enable catalogue
+  command: dnf module enable nodejs:24 -y  # Enable Node.js version 24
+
+- name: Install catalogue
+  package:
+    name: nodejs  # Package to install
+    state: present  # Ensure the package is installed
+
+# --------------------------------------------------------
+# Install Node.js application dependencies
+# --------------------------------------------------------
+- name: Install npm dependencies
+  community.general.npm:  # Module to manage npm packages
+    path: /app  # Directory containing package.json
+
+# --------------------------------------------------------
+# Configure Catalogue service
+# --------------------------------------------------------
+- name: Copy the catalogue service file
+  template:  # Module to generate a file using Jinja2 templates and copy it to the managed node
+    src: catalogue.service.j2  # Template file on Ansible Controller
+    dest: /etc/systemd/system/catalogue.service  # Destination on target server
+
+# --------------------------------------------------------
+# Install MongoDB client
+# --------------------------------------------------------
+- name: Copy MongoDB repo
+  copy:  # Module to copy files to target server
+    src: mongo.repo  # Source file on Ansible Controller
+    dest: /etc/yum.repos.d/mongo.repo  # Destination on target server
+
+- name: Install MongoDB client
+  dnf:  # Module to manage DNF packages
+    name: mongodb-mongosh  # MongoDB shell client package
+    state: present  # Ensure the package is installed
+
+# --------------------------------------------------------
+# Check whether Catalogue products are already loaded
+# --------------------------------------------------------
+- name: Check products loaded or not
+  command: mongosh --host "{{ mongodb_host }}" --quiet --eval 'db.getSiblingDB("catalogue").products.countDocuments()'
+  register: product_count  # Store the command result in a variable
+
+- name: Print product count
+  debug:  # Module to display variable values
+    msg: "{{ product_count.stdout }}"  # Display the command output
+
+# --------------------------------------------------------
+# Load products if the collection is empty
+# --------------------------------------------------------
+- name: Load the products
+  shell: mongosh --host "{{ mongodb_host }}" < /app/db/master-data.js
+  when: product_count.stdout | int == 0  # Convert output to integer and check if count is zero
+  # stdout contains the command output, for example: "0"
+
+# --------------------------------------------------------
+# Reload systemd and start Catalogue service
+# --------------------------------------------------------
+- name: Daemon reload
+  systemd_service:  # Module to manage systemd
+    daemon_reload: true  # Reload systemd configuration files
+
+- name: Start and enable catalogue
+  service:  # Module to manage Linux services
+    name: catalogue  # Catalogue service name
+    state: restarted  # Restart the service
+    enabled: yes  # Start automatically during system boot

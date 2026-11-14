@@ -1,0 +1,43 @@
+# --------------------------------------------------------
+    # Create RoboShop system user
+    # --------------------------------------------------------
+    - name: Create roboshop system user
+      user:                                # Module to manage Linux users
+        name: roboshop                     # Username to create
+        create_home: false                 # Do not create a home directory
+        home: /app                         # Set the home directory path
+        system: true                       # Create a system-level account
+        shell: /sbin/nologin               # Prevent interactive login
+        comment: "roboshop system user"    # Description of the user
+
+    # --------------------------------------------------------
+    # Prepare application directory
+    # --------------------------------------------------------
+    - name: Remove existing app directory
+      ansible.builtin.file:                # Module to manage files and directories
+        path: /app                         # Application directory path
+        state: absent                      # Remove the directory and its contents
+
+    - name: Remove {{ component }}.zip
+      ansible.builtin.file:
+        path: /tmp/{{ component }}.zip           # ZIP file location
+        state: absent                      # Remove the existing ZIP file
+
+    - name: Create app directory
+      ansible.builtin.file:
+        path: /app                         # Application directory path
+        state: directory                   # Ensure the directory exists
+
+    # --------------------------------------------------------
+    # Download and extract  component  source code
+    # --------------------------------------------------------
+    - name: Download source code
+      get_url:                             # Module to download files from a URL
+        url: https://raw.githubusercontent.com/daws-92s/roboshop-documentation/refs/heads/main/artifacts/{{ component }}-v4.zip
+        dest: /tmp/{{ component }}.zip           # Save the downloaded file here
+
+    - name: Unzip file
+      unarchive:                           # Module to extract archive files
+        src: /tmp/{{ component }}.zip            # Source ZIP file
+        dest: /app                         # Extract files into /app
+        remote_src: true                   # # Use the archive file already present on the target server.
