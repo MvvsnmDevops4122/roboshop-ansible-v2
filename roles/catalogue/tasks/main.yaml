@@ -1,4 +1,4 @@
-- name: Run another role
+- name: Run another role - application setup 
   ansible.builtin.include_role:
     name: common
     tasks_from: app-setup
