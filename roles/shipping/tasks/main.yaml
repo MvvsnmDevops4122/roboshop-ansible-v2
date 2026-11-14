@@ -46,7 +46,7 @@
 
 - name: Reload systemd
   systemd_service:                     # Module to manage systemd
-  daemon_reload: true                # Reload systemd unit files
+   daemon_reload: true                # Reload systemd unit files
 
 - name: Run another role - systemd setup 
   ansible.builtin.include_role:
