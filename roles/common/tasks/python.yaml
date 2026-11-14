@@ -1,0 +1,22 @@
+# --------------------------------------------------------
+    # 1. Install Python 3.14 and pip
+    # --------------------------------------------------------
+
+    - name: Install Python 3.14
+      dnf:                                 # DNF module manages software packages on RHEL-based systems
+        name:                              # Specify the packages to install
+          - python3.14                     # Install Python 3.14 interpreter
+          - python3.14-pip                 # Install pip package manager for Python
+        state: present                     # Ensure the specified packages are installed
+
+# --------------------------------------------------------
+    # 5. Install Python Dependencies
+    # --------------------------------------------------------
+
+    - name: Install dependencies
+      pip:                                   # Pip module installs Python packages
+        requirements: /app/requirements.txt
+                                             # Read required Python packages from requirements.txt
+        virtualenv: /app/.venv               # Create and use a Python virtual environment
+        virtualenv_command: python3.14 -m venv
+                                             # Use Python 3.14 to create the virtual environment
