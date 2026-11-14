@@ -1,14 +1,11 @@
     # --------------------------------------------------------
-    # 12. Reload Systemd and Start {{ component }} Service
+    # 12.  Start {{ component }} Service
     # --------------------------------------------------------
 
-    - name: Reload systemd
-      systemd_service:                     # Module to manage systemd
-        daemon_reload: true                # Reload systemd unit files
 
     - name: Start and enable {{ component }} service
       service:                             # Module to manage Linux services
-        name: {{ component }}                     # Service name
+        name: {{ component }}              # Service name
         state: restarted                   # Restart the {{ component }} service
         enabled: yes                       # Start automatically during boot
  
