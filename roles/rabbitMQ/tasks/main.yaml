@@ -1,0 +1,43 @@
+# -------------------------------------
+    # Copy RabbitMQ repository configuration
+    # -------------------------------------
+
+    - name: Copy RabbitMQ repo
+      copy:                                # Module to copy files
+        src: rabbitmq.repo                 # Source file on Ansible control node
+        dest: /etc/yum.repos.d/rabbitmq.repo  # Destination on managed node
+
+    # -------------------------------------
+    # Install Erlang and RabbitMQ server
+    # -------------------------------------
+
+    - name: Install RabbitMQ
+      package:                             # Module to manage software packages
+        name:
+          - erlang                         # Erlang package required by RabbitMQ
+          - rabbitmq-server                # RabbitMQ server package
+        state: present                     # Ensure packages are installed
+
+    # -------------------------------------
+    # Start and enable RabbitMQ service
+    # -------------------------------------
+
+    - name: Start and enable RabbitMQ service
+      service:                             # Module to manage system services
+        name: rabbitmq-server              # RabbitMQ service name
+        state: started                     # Ensure the service is running
+        enabled: yes                       # Start automatically at boot
+
+    # -------------------------------------
+    # Add RabbitMQ user and assign permissions
+    # -------------------------------------
+
+    - name: Add RabbitMQ user and give permission
+      community.rabbitmq.rabbitmq_user:    # Module to manage RabbitMQ users
+        user: {{ rabbitmq_user }}                    # RabbitMQ username
+        password: "{{ rabbitmq_password }}" # RabbitMQ password
+        vhost: /                           # RabbitMQ virtual host
+        configure_priv: .*                 # Permission to configure resources
+        read_priv: .*                      # Permission to read resources
+        write_priv: .*                     # Permission to write resources
+        state: present                     # Ensure the user exists
