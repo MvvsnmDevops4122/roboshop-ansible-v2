@@ -1,0 +1,39 @@
+# -------------------------------------
+    # Disable the default MySQL module
+    # -------------------------------------
+
+    - name: Disable MySQL
+      command: dnf module disable mysql -y  # Disable the default MySQL module
+
+    # -------------------------------------
+    # Enable MySQL version 8.4 module
+    # -------------------------------------
+
+    - name: Enable MySQL
+      command: dnf module enable mysql:8.4 -y  # Enable MySQL 8.4 module
+
+    # -------------------------------------
+    # Install MySQL server
+    # -------------------------------------
+
+    - name: Install MySQL
+      package:                              # Module to manage software packages
+        name: mysql-server                  # Package name
+        state: present                      # Ensure the package is installed
+
+    # -------------------------------------
+    # Start and enable MySQL service
+    # -------------------------------------
+
+    - name: Start and enable MySQL service
+      service:                              # Module to manage system services
+        name: mysqld                        # MySQL service name
+        state: started                      # Ensure the service is running
+        enabled: yes                        # Start automatically at boot
+
+    # -------------------------------------
+    # Set MySQL root password
+    # -------------------------------------
+
+    - name: Set MySQL root password
+      command: mysql_secure_installation --set-root-pass {{ mysql_root_password }}
