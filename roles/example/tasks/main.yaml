@@ -1,3 +1,6 @@
 - name: this is role dependency role
   debug:
    msg: "Hi from example role as dependecy"
+
+# dependecies are given inside catalogue/meta/main.yaml
+# while excuting playbbok first excute dependicies

@@ -1,0 +1,35 @@
+# --------------------------------------------------------
+    # 1. Enable Maven 3.9 and Install Required Packages
+    # --------------------------------------------------------
+
+    - name: Enable Maven 3.9
+      command: dnf module enable maven:3.9 -y
+      # Enable Maven version 3.9 module stream
+
+    - name: Install Maven, Java 25 and MySQL Client
+      dnf:                                 # Module to manage packages
+        name:
+          - maven                          # Install Maven build tool
+          - java-25-openjdk-devel          # Install Java 25 development tools
+          - maven-openjdk25                # Configure Maven to use Java 25
+          - mysql                          # Install MySQL client
+        state: present                     # Ensure packages are installed
+
+ # --------------------------------------------------------
+    # 6. Build {{ component }} Application
+    # --------------------------------------------------------
+
+    - name: Build {{ component }} application
+      command: mvn clean package           # Clean old build and create new JAR package
+      args:
+        chdir: /app                        # Run Maven from application directory
+
+    # --------------------------------------------------------
+    # 7. Move {{ component }} JAR File
+    # --------------------------------------------------------
+
+    - name: Move {{ component }} JAR file
+      command: mv target/{{ component }}.jar {{ component }}.jar
+      args:
+        chdir: /app                        # Execute command from /app directory
+

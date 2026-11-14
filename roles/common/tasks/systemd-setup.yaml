@@ -1,9 +1,15 @@
-# --------------------------------------------------------
-# Configure Catalogue service
-# --------------------------------------------------------
-- name: copy {{ component }} service
-  template:  # Module to generate a file using Jinja2 templates and copy it to the managed node
-    src: "{{ component }}.service.j2"  # Template file on Ansible Controller
-    dest: "/etc/systemd/system/{{ component }}.service"  # Destination on target server
+    # --------------------------------------------------------
+    # 12. Reload Systemd and Start {{ component }} Service
+    # --------------------------------------------------------
+
+    - name: Reload systemd
+      systemd_service:                     # Module to manage systemd
+        daemon_reload: true                # Reload systemd unit files
+
+    - name: Start and enable {{ component }} service
+      service:                             # Module to manage Linux services
+        name: {{ component }}                     # Service name
+        state: restarted                   # Restart the {{ component }} service
+        enabled: yes                       # Start automatically during boot
  
     
