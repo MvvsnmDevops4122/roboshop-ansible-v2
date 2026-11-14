@@ -1,2 +1,6 @@
 course: ansible
 duration: 10hrs
+
+
+# vars role have highest priority
+# default role have low priority
