@@ -11,7 +11,7 @@
 - name: Run another role - systemd setup 
   ansible.builtin.include_role:
     name: common
-    tasks_from: system-setup
+    tasks_from: systemd-setup
 
 
 # --------------------------------------------------------
@@ -53,7 +53,7 @@
 - name: Daemon reload
   systemd_service:  # Module to manage systemd
     daemon_reload: true  # Reload systemd configuration files
-    
+
 
 - name: Run another role - start and enable
   ansible.builtin.include_role:

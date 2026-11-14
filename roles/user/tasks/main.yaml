@@ -1,0 +1,20 @@
+- name: Run another role - application setup 
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: app-setup
+
+- name: Run another role - Nodejs setup 
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: nodejs
+
+- name: Run another role - systemd setup 
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: system-setup
+    
+
+- name: Run another role - start and enable
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: restart
