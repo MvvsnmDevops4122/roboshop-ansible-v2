@@ -1,7 +1,22 @@
 # ansible_user: ec2-user
 # ansible_password: DevOps321
+
+# confidential
 ansible_user: "{{ vault_ansible_user }}"
 ansible_password: "{{ vault_ansible_password }}"
 mysql_root_password: "{{ vault_mysql_root_password }}" 
 rabbitmq_user: "{{ vault_rabbitmq_user }}"
 rabbitmq_password: "{{ vault_rabbitmq_password }}"
+
+
+
+# non confidential
+mongodb_host: "mongodb.mvvsnm.online"
+redis_host: "redis.mvvsnm.online"
+mysql_host: "mysql.mvvsnm.online"
+rabbitmq_host: "rabbitmq.mvvsnm.online"
+catalogue_host: "catalogue.mvvsnm.online"
+cart_host: "cart.mvvsnm.online"
+user_host: "user.mvvsnm.online"
+shipping_host: "shipping.mvvsnm.online"
+payment_host: "payment.mvvsnm.online"

@@ -1,0 +1,9 @@
+# --------------------------------------------------------
+# start and enable Component service
+# --------------------------------------------------------
+
+- name: Start and enable component
+  service:  # Module to manage Linux services
+    name: "{{ component }}"  # Catalogue service name
+    state: restarted  # Restart the service
+    enabled: yes  # Start automatically during system boot
