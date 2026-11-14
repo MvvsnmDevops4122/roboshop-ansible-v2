@@ -34,7 +34,7 @@
 
     - name: Add RabbitMQ user and give permission
       community.rabbitmq.rabbitmq_user:    # Module to manage RabbitMQ users
-        user: "{{ rabbitmq_user }}"                    # RabbitMQ username
+        user: "{{ rabbitmq_users }}"                    # RabbitMQ username
         password: "{{ rabbitmq_password }}" # RabbitMQ password
         vhost: /                           # RabbitMQ virtual host
         configure_priv: .*                 # Permission to configure resources
