@@ -1,0 +1,8 @@
+# --------------------------------------------------------
+    # 11. Restart Nginx Service
+    # --------------------------------------------------------
+
+    - name: restart nginx
+      service:                              # Service module manages Linux services
+        name: nginx                         # Name of the service to manage
+        state: restarted                    # Restart Nginx to apply the new configuration

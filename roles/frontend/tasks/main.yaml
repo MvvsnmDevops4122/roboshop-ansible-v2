@@ -1,0 +1,95 @@
+
+    # --------------------------------------------------------
+    # 1. Disable Existing Nginx Module
+    # --------------------------------------------------------
+
+    - name: Disable frontend
+      command: dnf module disable nginx -y  # Disable the currently enabled Nginx module
+
+    # --------------------------------------------------------
+    # 2. Enable Nginx 1.26 Module
+    # --------------------------------------------------------
+
+    - name: Enable frontend
+      command: dnf module enable nginx:1.26 -y
+                                             # Enable Nginx version 1.26 module stream
+
+    # --------------------------------------------------------
+    # 3. Install Nginx
+    # --------------------------------------------------------
+
+    - name: Install frontend
+      package:                              # Package module manages software installation
+        name: nginx                         # Specify Nginx package to install
+        state: present                      # Ensure Nginx is installed
+
+    # --------------------------------------------------------
+    # 4. Start and Enable Nginx Service
+    # --------------------------------------------------------
+
+    - name: Start and enable nginx
+      service:                              # Service module manages Linux services
+        name: nginx                         # Name of the service to manage
+        state: started                      # Ensure Nginx service is running
+        enabled: yes                        # Enable Nginx to start automatically during boot
+
+    # --------------------------------------------------------
+    # 5. Find Existing Files and Directories
+    # --------------------------------------------------------
+
+    - name: Find all files and subdirectories inside the target directory
+      ansible.builtin.find:                 # Find module searches for files and directories
+        paths: /usr/share/nginx/html/       # Directory to search for existing content
+        file_type: any                      # Find both files and directories
+        hidden: true                        # Include hidden files and directories
+      register: dir_contents                # Store the search results in dir_contents variable
+
+    # --------------------------------------------------------
+    # 6. Display Existing Directory Contents
+    # --------------------------------------------------------
+
+    - name: Print directory content
+      debug:                                # Debug module displays variables and messages
+        msg: "{{ dir_contents }}"           # Display the contents stored in dir_contents
+
+    # --------------------------------------------------------
+    # 7. Remove Existing Files and Directories (Optional)
+    # --------------------------------------------------------
+
+    - name: Remove all found files and subodirectries inside the target directory
+      ansible.builtin.file:               # File module manages files and directories
+        path: "{{ item.path }}"           # Path of the current file or directory
+        state: absent                     # Remove the specified file or directory
+      loop: "{{ dir_contents.files }}"    # Repeat for every item found by the find module
+
+    # --------------------------------------------------------
+    # 8. Download Frontend Application
+    # --------------------------------------------------------
+
+    - name: Download frontend application
+      get_url:                              # Get_url module downloads files from remote URLs
+        url: https://raw.githubusercontent.com/daws-92s/roboshop-documentation/refs/heads/main/artifacts/frontend-v4.zip
+                                             # GitHub URL containing frontend application ZIP
+        dest: /tmp/frontend.zip             # Download and save ZIP file on the frontend server
+
+    # --------------------------------------------------------
+    # 9. Extract Frontend Application
+    # --------------------------------------------------------
+
+    - name: Unzip frontend
+      unarchive:                            # Unarchive module extracts ZIP and other archive files
+        src: /tmp/frontend.zip              # Location of the downloaded ZIP file
+        dest: /usr/share/nginx/html/        # Extract frontend files into Nginx document root
+        remote_src: yes                     # ZIP file already exists on the remote server
+
+    # --------------------------------------------------------
+    # 10. Configure RoboShop Nginx Configuration
+    # --------------------------------------------------------
+
+    - name: Copy roboshop config
+      template:                             # Template module processes Jinja2 templates and copies files
+        src: roboshop.conf.j2               # Source Jinja2 template on Ansible control node
+        dest: /etc/nginx/default.d/roboshop.conf
+      notify: restart nginx                                   # Destination Nginx configuration file on frontend server
+
+    
