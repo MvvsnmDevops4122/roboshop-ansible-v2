@@ -46,7 +46,7 @@
     # # Start and enable Redis service
     # # -------------------------------------
 
-    - name: Run another role - java setup 
+    - name: Run another role - restart
       ansible.builtin.include_role:
        name: common
        tasks_from: restart
