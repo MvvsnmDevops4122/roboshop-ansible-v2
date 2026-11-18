@@ -41,21 +41,35 @@
         regexp: '^#?protected-mode yes'  # Pattern to search for
         line: 'protected-mode no'    # Replace the matching line
 
-    # -------------------------------------
-    # Start and enable Redis service
-    # -------------------------------------
 
-    - name: Start and enable Redis service
-      service:
-        name: redis                  # Redis service name
-        state: started               # Ensure the service is running
-        enabled: yes                 # Start automatically at boot
+    # # -------------------------------------
+    # # Start and enable Redis service
+    # # -------------------------------------
 
-    # ---------------------------------------------
-    # Restart Redis to apply configuration changes
-    # ---------------------------------------------
+    - name: Run another role - java setup 
+      ansible.builtin.include_role:
+       name: common
+       tasks_from: restart
 
-    - name: Restart Redis service
-      service:
-        name: redis                  # Redis service name
-        state: restarted             # Restart the service
+
+
+
+
+    # # -------------------------------------
+    # # Start and enable Redis service
+    # # -------------------------------------
+
+    # - name: Start and enable Redis service
+    #   service:
+    #     name: redis                  # Redis service name
+    #     state: started               # Ensure the service is running
+    #     enabled: yes                 # Start automatically at boot
+
+    # # ---------------------------------------------
+    # # Restart Redis to apply configuration changes
+    # # ---------------------------------------------
+
+    # - name: Restart Redis service
+    #   service:
+    #     name: redis                  # Redis service name
+    #     state: restarted             # Restart the service
