@@ -25,10 +25,11 @@
     # Start and enable MySQL service
     # -------------------------------------
 
-    - name: Run another role - restart
-      ansible.builtin.include_role:
-       name: common
-       tasks_from: restart
+    - name: Start and enable MySQL service
+      service:                              # Module to manage system services
+        name: mysqld                        # MySQL service name
+        state: started                      # Ensure the service is running
+        enabled: yes                        # Start automatically at boot
 
     # -------------------------------------
     # Set MySQL root password
