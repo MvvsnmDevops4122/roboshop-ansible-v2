@@ -3,7 +3,9 @@
   become: yes
   roles: # By default it checks in roles folder in current directory
   - "{{ component }}"
-  
 
+  
+# roles: – Specifies which roles to execute.
+# EX: mongodb – Name of the role inside the roles/ directory.
 # Inventory group name must match the component variable.
 # Role directory name must also match the component variable.
